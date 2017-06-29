@@ -19,5 +19,13 @@ namespace Ecstasy.Components
 			this.Position = Vector3.Zero;
 			this.Scale = Vector3.One;
 		}
+
+		public override EcsComponent Clone()
+		{
+			var component = new EcsTransformComponent();
+			component.Position = this.Position;
+			component.Scale = this.Scale;
+			return component;
+		}
 	}
 }

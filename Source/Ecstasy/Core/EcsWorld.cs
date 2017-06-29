@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -16,6 +17,8 @@ namespace Ecstasy.Core
 
 		public SpriteBatch SpriteBatch { get; private set; }
 
+		public EcsPrefabLibrary PrefabLibrary { get; private set; }
+
 		public List<EcsSystem> Systems { get; private set; }
 
 		public List<EcsEntity> Entities { get; private set; }
@@ -26,12 +29,13 @@ namespace Ecstasy.Core
 		{
 			this.ContentManager = contentManager;
 			this.SpriteBatch = spriteBatch;
+			this.PrefabLibrary = new EcsPrefabLibrary();
 			this.Systems = new List<EcsSystem>();
 			this.Entities = new List<EcsEntity>();
 
 			_componentGroups = new Dictionary<Type, List<EcsComponent>>();
 
-			this.InitializeBuiltinSystems();
+			this.InitializeSystems();
 		}
 
 		public void AddEntity( EcsEntity entity )
@@ -66,13 +70,6 @@ namespace Ecstasy.Core
 			}
 		}
 
-		public void AddSystem<T>() where T : EcsSystem, new()
-		{
-			var system = new T();
-			system.World = this;
-			this.Systems.Add( system );
-		}
-
 		public List<EcsComponent> GetComponents( Type type )
 		{
 			List<EcsComponent> components = null;
@@ -89,6 +86,11 @@ namespace Ecstasy.Core
 		public List<EcsComponent> GetComponents<T>() where T : EcsComponent
 		{
 			return this.GetComponents( typeof( T ) );
+		}
+
+		public EcsEntity Instantiate( string name )
+		{
+			return this.PrefabLibrary.GetPrefab( name ).Instantiate();
 		}
 
 		public void Load()
@@ -125,11 +127,24 @@ namespace Ecstasy.Core
 			this.SpriteBatch.End();
 		}
 
-		private void InitializeBuiltinSystems()
+		private void AddSystem( Type type )
 		{
-			this.AddSystem<EcsSpriteLoadSystem>();
-			this.AddSystem<EcsSpriteRenderSystem>();
-			this.AddSystem<EcsSimpleMoveSystem>();
+			var system = Activator.CreateInstance( type ) as EcsSystem;
+			system.World = this;
+			this.Systems.Add( system );
+		}
+
+		private void InitializeSystems()
+		{
+			var assembly = Assembly.GetExecutingAssembly();
+			var types = assembly.GetTypes();
+			foreach( var type in types )
+			{
+				if( type.BaseType == typeof( EcsSystem ) )
+				{
+					this.AddSystem( type );
+				}
+			}
 		}
 	}
 }

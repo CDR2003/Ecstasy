@@ -57,5 +57,10 @@ namespace Ecstasy.Core
 		{
 			return this.World.GetComponents<T>();
 		}
+
+		protected EcsEntity Instantiate( string name )
+		{
+			return this.World.Instantiate( name );
+		}
 	}
 }

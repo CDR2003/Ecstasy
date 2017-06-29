@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Ecstasy.Core
 {
-	public class EcsComponent
+	public abstract class EcsComponent
 	{
 		public EcsEntity Entity { get; internal set; }
 
@@ -23,5 +23,7 @@ namespace Ecstasy.Core
 		{
 			return this.Entity.GetComponent<T>();
 		}
+
+		public abstract EcsComponent Clone();
 	}
 }
